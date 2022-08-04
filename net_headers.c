@@ -13,18 +13,17 @@ void print_uchar_as_hex(u_char *array, int len){
 Ethernet
 */
 void print_ether_mac(u_char *array){
-    printf("\033[91m");
     for (int i = 0; i < ETHER_ADDR_LEN; i++){ 
         printf("%02X", (unsigned int)(array[i]) & 0xFF);
         if(i!=ETHER_ADDR_LEN-1){printf(":");}        
     }
-    printf("\033[0m\n");
+    printf("\n");
 }
 
 
 void print_ether_macs(my_ether_hdr ether_hdr){
-    printf("destination mac address: "); print_ether_mac((u_char *)&ether_hdr.des_mac);
-    printf("source mac address: "); print_ether_mac((u_char *)&ether_hdr.src_mac);
+    printf("dst mac : "); print_ether_mac((u_char *)&ether_hdr.des_mac);
+    printf("src mac : "); print_ether_mac((u_char *)&ether_hdr.src_mac);
 }
 
 
@@ -32,18 +31,17 @@ void print_ether_macs(my_ether_hdr ether_hdr){
 IP
 */
 void print_ip_addr(u_char *array){
-    printf("\033[95m");
     for (int i = 0; i < IP_ADDR_LEN; i++){ 
         printf("%d", (unsigned int)(array[i]) & 0xFF);
         if(i!=IP_ADDR_LEN-1){printf(".");}        
     }
-    printf("\033[0m\n");
+    printf("\n");
 }
 
 
 void print_ip_addrs(my_ip_hdr ip_hdr){
-    printf("ip source address: "); print_ip_addr((u_char *)&ip_hdr.src_addr);
-    printf("ip destination address: "); print_ip_addr((u_char *)&ip_hdr.des_addr);
+    printf("ip src : "); print_ip_addr((u_char *)&ip_hdr.src_addr);
+    printf("ip des : "); print_ip_addr((u_char *)&ip_hdr.des_addr);
 }
 
 
@@ -70,8 +68,8 @@ void print_ip_info(my_ip_hdr ip_hdr){
 TCP
 */
 void print_tcp_ports(my_tcp_hdr tcp_hdr){
-    printf("source port: \033[96m%d\033[0m\n", ntohs(tcp_hdr.src_port));
-    printf("destination port: \033[96m%d\033[0m\n", ntohs(tcp_hdr.des_port));
+    printf("src port : %d\n", ntohs(tcp_hdr.src_port));
+    printf("des port : %d\n", ntohs(tcp_hdr.des_port));
 }
 
 

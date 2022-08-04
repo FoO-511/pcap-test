@@ -65,6 +65,8 @@ int main(int argc, char *argv[])
 		if (ntohs(ether_hdr.ether_type) != 0x0800){printf("type is not ip\n"); continue;}
 
 		my_ip_hdr ip_hdr;
+
+		u_int64_t ip_hdr_offset = offset;
 		memcpy(&ip_hdr, packet+offset, 1); offset+=1;
 		memcpy(&ip_hdr.type_of_service, packet+offset, 1); offset+=1;
 		memcpy(&ip_hdr.total_length, packet+offset, 2); offset+=2;
@@ -80,6 +82,9 @@ int main(int argc, char *argv[])
 
 		if (ip_hdr.protocol!= 0x06){printf("protocol is not tcp\n"); continue;}
 
+		u_int64_t tcp_hdr_offset = ip_hdr_offset + ip_hdr.hdr_len *4;
+		offset = tcp_hdr_offset;
+
 		my_tcp_hdr tcp_hdr;
 		memcpy(&tcp_hdr.src_port, packet+offset, 2); offset+=2;
 		memcpy(&tcp_hdr.des_port, packet+offset, 2); offset+=2;
@@ -92,6 +97,16 @@ int main(int argc, char *argv[])
 		memcpy(&tcp_hdr.urgent_pointer, packet+offset, 2); offset+=2;
 
 		print_tcp_ports(tcp_hdr);
+
+		u_int64_t data_offset = offset+ (u_int64_t)tcp_hdr.data_offset;
+		u_int64_t data_len = header->caplen - data_offset;
+
+		if (data_len > 0){
+			printf("data(~10) : ");
+			// print("data len: %d\n", data_len);
+			if (data_len >10) print_uchar_as_hex((void*)packet+data_offset, 10);
+			else print_uchar_as_hex((void*)packet+data_offset, data_len);
+		}
 	}
 
 	pcap_close(pcap);
