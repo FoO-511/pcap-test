@@ -40,6 +40,7 @@ int main(int argc, char *argv[])
 
 	while (true)
 	{
+		int offset = 0;
 		struct pcap_pkthdr *header;
 		const u_char *packet;
 		int res = pcap_next_ex(pcap, &header, &packet);
@@ -51,46 +52,46 @@ int main(int argc, char *argv[])
 			break;
 		}
 
-		print_uchar_as_hex((void *)packet, header->caplen);
+		// print_uchar_as_hex((void *)packet, header->caplen);
 		printf("\n");
 
 		my_ether_hdr ether_hdr;
-		memcpy(&ether_hdr.des_mac, packet + 0, 6);
-		memcpy(&ether_hdr.src_mac, packet + 6, 6);
-		memcpy(&ether_hdr.ether_type, packet + 12, 2);
+		memcpy(&ether_hdr.des_mac, packet + offset, 6); offset+=6;
+		memcpy(&ether_hdr.src_mac, packet + offset, 6); offset+=6;
+		memcpy(&ether_hdr.ether_type, packet + offset, 2); offset+=2;
 
 		print_ether_macs(ether_hdr);
 
 		if (ntohs(ether_hdr.ether_type) != 0x0800){printf("type is not ip\n"); continue;}
 
 		my_ip_hdr ip_hdr;
-		memcpy(&ip_hdr, packet+14, 1);
-		memcpy(&ip_hdr.type_of_service, packet+15, 1);
-		memcpy(&ip_hdr.total_length, packet+16, 2);
-		memcpy(&ip_hdr.id, packet+18, 2);
-		memcpy(&ip_hdr.id+2, packet+20, 2);
-		memcpy(&ip_hdr.time_to_live, packet+22, 1);
-		memcpy(&ip_hdr.protocol, packet+23, 1);
-		memcpy(&ip_hdr.hdr_checksum, packet+24, 2);
-		memcpy(&ip_hdr.src_addr, packet+26, 4);
-		memcpy(&ip_hdr.des_addr, packet+30, 4);
+		memcpy(&ip_hdr, packet+offset, 1); offset+=1;
+		memcpy(&ip_hdr.type_of_service, packet+offset, 1); offset+=1;
+		memcpy(&ip_hdr.total_length, packet+offset, 2); offset+=2;
+		memcpy(&ip_hdr.id, packet+offset, 2); offset+=2;
+		memcpy(&ip_hdr.id+2, packet+offset, 2); offset+=2;
+		memcpy(&ip_hdr.time_to_live, packet+offset, 1); offset+=1;
+		memcpy(&ip_hdr.protocol, packet+offset, 1); offset+=1;
+		memcpy(&ip_hdr.hdr_checksum, packet+offset, 2); offset+=2;
+		memcpy(&ip_hdr.src_addr, packet+offset, 4); offset+=4;
+		memcpy(&ip_hdr.des_addr, packet+offset, 4); offset+=4;
 
 		print_ip_addrs(ip_hdr);
 
 		if (ip_hdr.protocol!= 0x06){printf("protocol is not tcp\n"); continue;}
 
 		my_tcp_hdr tcp_hdr;
-		memcpy(&tcp_hdr.src_port, packet+34, 2);
-		memcpy(&tcp_hdr.des_port, packet+36, 2);
-		memcpy(&tcp_hdr.seq_num, packet+38, 4);
-		memcpy(&tcp_hdr.ack_num, packet+42, 4);
-		memcpy(&tcp_hdr.ack_num+4, packet+46, 2); // can't write on bit field
-		memcpy(&tcp_hdr.window_size, packet+48, 2);
-		memcpy(&tcp_hdr.checksum, packet+50, 2);
-		memcpy(&tcp_hdr.urgent_pointer, packet+52, 2);
+		memcpy(&tcp_hdr.src_port, packet+offset, 2); offset+=2;
+		memcpy(&tcp_hdr.des_port, packet+offset, 2); offset+=2;
+		memcpy(&tcp_hdr.seq_num, packet+offset, 4); offset+=4;
+		memcpy(&tcp_hdr.ack_num, packet+offset, 4); offset+=4;
+		memcpy(&tcp_hdr.ack_num+1, packet+offset, 2); offset+=2; // can't write on bit field
+		// 주소에 1을 더하면 1byte가 늘어나지 않고 4byte가 늘어남. &tcp_hdr.ack_num가 4byte 자료형의 포인터이기 때문.
+		memcpy(&tcp_hdr.window_size, packet+offset, 2); offset+=2;
+		memcpy(&tcp_hdr.checksum, packet+offset, 2); offset+=2;
+		memcpy(&tcp_hdr.urgent_pointer, packet+offset, 2); offset+=2;
 
-		print_tcp_info(tcp_hdr);
-	
+		print_tcp_ports(tcp_hdr);
 	}
 
 	pcap_close(pcap);

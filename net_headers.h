@@ -40,7 +40,19 @@ typedef struct{
     u_int16_t des_port;
     u_int32_t seq_num;
     u_int32_t ack_num;
-    u_int16_t data_offset:4, zeros:3, NS:1, CWR:1, ECE:1, URG:1, ACK:1, PSH:1, RST:1, SYN:1, FIN:1;
+    // u_int16_t data_offset:4, zeros:3, NS:1, CWR:1, ECE:1, URG:1, ACK:1, PSH:1, RST:1, SYN:1, FIN:1;
+    
+    u_int8_t zeros:3, NS:1, data_offset:4; // LIBNET_BIG_ENDIAN의 순서로 해야함. (그걸 어떻게 알지?)
+    u_int8_t 
+    FIN:1,
+    SYN:1, 
+    RST:1, 
+    PSH:1, 
+    ACK:1, 
+    URG:1, 
+    ECE:1, 
+    CWR:1;
+
     u_int16_t window_size;
     u_int16_t checksum;
     u_int16_t urgent_pointer;
@@ -55,5 +67,6 @@ void print_ip_info(my_ip_hdr ip_hdr);
 void print_ip_addr(u_char *array);
 void print_ip_addrs(my_ip_hdr ip_hdr);
 
+void print_tcp_flags(my_tcp_hdr tcp_hdr);
 void print_tcp_info(my_tcp_hdr tcp_hdr);
 void print_tcp_ports(my_tcp_hdr tcp_hdr);
